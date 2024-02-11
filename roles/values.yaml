@@ -1,0 +1,18 @@
+clusterrole:
+  name: 
+  serviceaccount:
+    name: 
+  secret:
+    name: 
+clusterrolebinding:
+  name: 
+
+role: 
+  namespace: 
+  name: 
+  serviceaccount:
+    name: 
+  secret:
+    name: 
+rolebinding:
+  name:

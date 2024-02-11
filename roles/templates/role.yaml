@@ -1,0 +1,101 @@
+
+{{- if .Values.clusterrole.name -}}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Values.clusterrole.name }}
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "services", "namespaces", "nodes"]
+    verbs: ["create", "get", "update", "list", "watch", "patch"]
+  - apiGroups: ["apps"]
+    resources: ["deployment"]
+    verbs: ["create", "get", "update", "list", "delete", "watch", "patch"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["clusterroles", "clusterrolebindings"]
+    verbs: ["create", "get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Values.clusterrolebinding.name }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.clusterrole.serviceaccount.name }}
+    namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: {{ .Values.clusterrole.name }}
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.clusterrole.serviceaccount.name }}
+  namespace: kube-system
+secrets:
+  - name: {{ .Values.clusterrole.secret.name }}
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.clusterrole.secret.name }}
+  namespace: kube-system
+  annotations:
+    kubernetes.io/service-account.name: {{ .Values.clusterrole.serviceaccount.name }}
+type: kubernetes.io/service-account-token
+{{- end -}}
+
+{{- if .Values.role.namespace -}}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ .Values.role.name }}
+  namespace: {{ .Values.role.namespace }}
+rules:
+  - apiGroups: [""]
+    resources: ["*"]
+    verbs: ["create", "get", "update", "list", "watch", "patch"]
+  - apiGroups: ["apps"]
+    resources: ["deployment"]
+    verbs: ["create", "get", "update", "list", "delete", "watch", "patch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name:  {{ .Values.rolebinding.name }}
+  namespace: {{ .Values.role.namespace }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.role.serviceaccount.name }}
+    namespace: {{ .Values.role.namespace }}
+roleRef:
+  kind: Role
+  name:  {{ .Values.role.name }}
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.role.serviceaccount.name }}
+  namespace: {{ .Values.role.namespace }}
+secrets:
+  - name: {{ .Values.role.secret.name }}
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.role.serviceaccount.name }}
+  namespace: {{ .Values.role.namespace }}
+  annotations:
+    kubernetes.io/service-account.name: {{ .Values.role.serviceaccount.name }}
+type: kubernetes.io/service-account-token
+{{- end }}
